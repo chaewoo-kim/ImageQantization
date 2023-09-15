@@ -1,5 +1,4 @@
 import numpy as np
 
-a = np.array([[0],[1]])
-arr = ''.join(str(a))
-print(a)
+hValue = np.array([[0,0,0] for _ in range(10)])
+print(hValue)

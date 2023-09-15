@@ -6,7 +6,7 @@ import math
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 
-img = cv2.imread('rgb.jpg') #배열로 이미지 불러오기
+img = cv2.imread('pill.jpg') #배열로 이미지 불러오기
 
 #cv2.kmeans는 (N,3)의 shape과 flaot32의 데이터 형식을 입력 조건으로 사용 
 #reshape(-1,3)은 2차원 배열로 바꾸되 3열로 바꾸고 행은 알아서 넣으라는 뜻
@@ -25,7 +25,7 @@ criteria = (cv2.TERM_CRITERIA_EPS|cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0) #최대 1
 #label은 해당 데이터가 어떤 군집에 속했는지를 알려주는 데이터인 0,1 등의 값을 갖고 있는 배열
 #center은 군집의 중심점 좌표들이 저장된 배열 
 #retval은 각 포인트와 중심 간의 거리의 제곱의 합. 높을수록 중심에서 멀리 있는 포인트들이 많고 낮을수록 중심에 가까이 있는 포인트들이 많음.
-k=10
+k=3
 ret, label, center = cv2.kmeans(data, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS) #kmeans 실행 
 
 #center는 float32 형식이므로 opencv에서 주로 사용하는 형식인 uint8로 변경 
@@ -42,25 +42,17 @@ result = center[label.flatten()]
 result = result.reshape((img.shape))
 
 
-
 blueImage = result.copy()
 greenImage = result.copy()
 redImage = result.copy()
 
 
-
-# 위 사진에 빨간색 부분만 확인 할 수 있습니다.
 blueImage[:,:,1] = 0 # G 제거
 blueImage[:,:,2] = 0 # R 제거
 greenImage[:,:,0] = 0 # B 제거
 greenImage[:,:,2] = 0 # R 제거
 redImage[:,:,0] = 0 # B 제거
 redImage[:,:,1] = 0 # G 제거
-
-
-print(type(blueImage), blueImage.shape)
-print(blueImage[0][0][0],greenImage[0][0][1],redImage[0][0][2])
-
 
 
 height, width, channel = result.shape
@@ -71,6 +63,7 @@ b, g, r = cv2.split(bgr)
 h = np.zeros((height, width), dtype=float)
 s = np.zeros((height, width), dtype=float)
 v = np.max(bgr, axis=2)
+
 
 for i in range(height):
     for j in range(width):
