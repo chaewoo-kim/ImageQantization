@@ -12,6 +12,7 @@ img = Image.open("yellow_pill.jpg")
 pix = np.array(img)
 
 
+
 #3차원 배열 pix를 2차원 배열로 변환 뒤 floor 열 삭제
 row,col,floor = pix.shape
 twoDim_array = np.column_stack(((np.repeat(np.arange(row), col)), pix.reshape(row*col, -1)))
