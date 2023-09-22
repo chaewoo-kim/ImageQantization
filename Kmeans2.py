@@ -109,8 +109,8 @@ class K_Means:
             input_row = int(i/(col))
             input_col = int(i%(col))
             self.hValue[input_row][input_col] = h
-            self.sValue[input_row][input_col] = s
-            self.vValue[input_row][input_col] = v
+            self.sValue[input_row][input_col] = int(s*100)
+            self.vValue[input_row][input_col] = int(v*100)
         
             
     def valueToText(self):
@@ -128,11 +128,11 @@ class K_Means:
         hValueText.write(hToString)
         hValueText.close()
         sValueText = open("s.txt", 'w+')
-        sToString = ''.join(str(self.sValue*100))
+        sToString = ''.join(str(self.sValue))
         sValueText.write(sToString)
         sValueText.close()
         vValueText = open("v.txt", 'w+')
-        vToString = ''.join(str(self.vValue*100))
+        vToString = ''.join(str(self.vValue))
         vValueText.write(vToString)
         vValueText.close()
         blueValueText = open("blue.txt", 'w+')
