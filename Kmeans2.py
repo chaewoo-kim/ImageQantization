@@ -1,14 +1,12 @@
 from PIL import Image
 import numpy as np
-import pandas as pd
 import random
-import math
 import sys
 np.set_printoptions(threshold=sys.maxsize)
 
 
 #해당 이미지를 배열로 변환
-img = Image.open("pill.jpg")
+img = Image.open("yellowBanana.jpg")
 pix = np.array(img)
 
 
@@ -57,17 +55,17 @@ class K_Means:
             #중심점 재설정
             #1. 군집의 모든 BGR 값의 평균으로 중심점 설정
             for i in range(self.k):
-                bCount, gCount, rCount = 1, 1, 1
-                bSum, gSum, rSum = 0, 0, 0
+                rCount, gCount, bCount = 1, 1, 1
+                rSum, gSum, bSum = 0, 0, 0
                 for j in range(self.N):
                     if (self.Cluster[j] == i):
-                        bSum += self.data[j][0]
-                        bCount += 1
+                        rSum += self.data[j][0]
+                        rCount += 1
                         gSum += self.data[j][1]
                         gCount += 1
-                        rSum += self.data[j][2]
-                        rCount += 1
-                self.standard[i] = [int(bSum/bCount), int(gSum/gCount), int(rSum/rCount)]
+                        bSum += self.data[j][2]
+                        bCount += 1
+                self.standard[i] = [int(rSum/rCount), int(gSum/gCount), int(bSum/bCount)]
             
         
     def quantization(self):
@@ -78,51 +76,69 @@ class K_Means:
                 if (self.Cluster[i] == j):
                     self.data[i] = self.standard[j]
         self.resultCluster = self.data.reshape((pix.shape))
+        print(self.standard)
+
 
     def bgrToHsv(self):
         #bgr을 hsv로 변환
         for i in range(self.N):
             maximum, minimum = 0, 0
-            b = float(self.data[i][0])/255
+            r = float(self.data[i][0])/255
+            print(" r : ",r)
             g = float(self.data[i][1])/255
-            r = float(self.data[i][2])/255
-            maximum = max(b,g,r)
-            minimum = min(b,g,r)
+            print("g : ", g)
+            b = float(self.data[i][2])/255
+            print("b : ", b)
+            maximum = max(r,g,b)
+            print("maximum : ", maximum)
+            minimum = min(r,g,b)
+            print("minimum : ", minimum)
 
             v = maximum
+            print("v : ", v)
 
             if (v == 0):
                 h = 0
+                print("h : ", h)
                 s = 0
+                print("s : ", s)
             else:
                 s = 1-(minimum/v)
+                print("s : ", s)
                 if (v == r):
                     h = 60*(g-b)/(v-minimum)
+                    print("h : ", h)
                 elif (v == g):
                     h = 120 + (60*(b-r))/(v-minimum)
+                    print("h : ", h)
                 elif (v == b):
                     h = 240 + (60*(r-g))/(v-minimum)
+                    print("h : ", h)
                 if (h < 0):
                     h += 360
+                    print("h : ", h)
                     h /= 360
+                    print("h : ", h)
+                    
 
             input_row = int(i/(col))
             input_col = int(i%(col))
+            print(i,"번째 -> h : ", h, " s : ", s, " v : ", v)
             self.hValue[input_row][input_col] = h
-            self.sValue[input_row][input_col] = int(s*100)
-            self.vValue[input_row][input_col] = int(v*100)
-        
+            self.sValue[input_row][input_col] = s*100
+            self.vValue[input_row][input_col] = v*100
             
+
     def valueToText(self):
-        self.blueImage = self.resultCluster.copy()
         self.greenImage = self.resultCluster.copy()
         self.redImage = self.resultCluster.copy()
+        self.blueImage = self.resultCluster.copy()
         self.blueImage[:,:,1] = 0
-        self.blueImage[:,:,2] = 0
+        self.blueImage[:,:,0] = 0
         self.greenImage[:,:,0] = 0
         self.greenImage[:,:,2] = 0
-        self.redImage[:,:,0] = 0
         self.redImage[:,:,1] = 0
+        self.redImage[:,:,2] = 0
         hValueText = open("h.txt", 'w+')
         hToString = ''.join(str(self.hValue))
         hValueText.write(hToString)
@@ -165,4 +181,4 @@ Algorithm.clustering(4)
 Algorithm.quantization()
 Algorithm.bgrToHsv()
 Algorithm.valueToText()
-Algorithm.show()
+# Algorithm.show()
