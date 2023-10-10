@@ -129,37 +129,37 @@ class K_Means:
             self.vValue[input_row][input_col] = v*100
             
 
-    def valueToText(self):
-        self.greenImage = self.resultCluster.copy()
-        self.redImage = self.resultCluster.copy()
-        self.blueImage = self.resultCluster.copy()
-        self.blueImage[:,:,1] = 0
-        self.blueImage[:,:,0] = 0
-        self.greenImage[:,:,0] = 0
-        self.greenImage[:,:,2] = 0
-        self.redImage[:,:,1] = 0
-        self.redImage[:,:,2] = 0
-        hValueText = open("h.txt", 'w+')
-        hToString = ''.join(str(self.hValue))
-        hValueText.write(hToString)
-        hValueText.close()
-        sValueText = open("s.txt", 'w+')
-        sToString = ''.join(str(self.sValue))
-        sValueText.write(sToString)
-        sValueText.close()
-        vValueText = open("v.txt", 'w+')
-        vToString = ''.join(str(self.vValue))
-        vValueText.write(vToString)
-        vValueText.close()
-        blueValueText = open("blue.txt", 'w+')
-        blueToString = ''.join(str(self.blueImage))
-        blueValueText.write(blueToString)
-        greenValueText = open("green.txt", 'w+')
-        greenToString = ''.join(str(self.greenImage))
-        greenValueText.write(greenToString)
-        redValueText = open("red.txt", 'w+')
-        redToString = ''.join(str(self.redImage))
-        redValueText.write(redToString)    
+    # def valueToText(self):
+    #     self.greenImage = self.resultCluster.copy()
+    #     self.redImage = self.resultCluster.copy()
+    #     self.blueImage = self.resultCluster.copy()
+    #     self.blueImage[:,:,1] = 0
+    #     self.blueImage[:,:,0] = 0
+    #     self.greenImage[:,:,0] = 0
+    #     self.greenImage[:,:,2] = 0
+    #     self.redImage[:,:,1] = 0
+    #     self.redImage[:,:,2] = 0
+    #     hValueText = open("h.txt", 'w+')
+    #     hToString = ''.join(str(self.hValue))
+    #     hValueText.write(hToString)
+    #     hValueText.close()
+    #     sValueText = open("s.txt", 'w+')
+    #     sToString = ''.join(str(self.sValue))
+    #     sValueText.write(sToString)
+    #     sValueText.close()
+    #     vValueText = open("v.txt", 'w+')
+    #     vToString = ''.join(str(self.vValue))
+    #     vValueText.write(vToString)
+    #     vValueText.close()
+    #     blueValueText = open("blue.txt", 'w+')
+    #     blueToString = ''.join(str(self.blueImage))
+    #     blueValueText.write(blueToString)
+    #     greenValueText = open("green.txt", 'w+')
+    #     greenToString = ''.join(str(self.greenImage))
+    #     greenValueText.write(greenToString)
+    #     redValueText = open("red.txt", 'w+')
+    #     redToString = ''.join(str(self.redImage))
+    #     redValueText.write(redToString)    
 
 
     def show(self):
@@ -169,10 +169,10 @@ class K_Means:
         sImage = Image.fromarray(self.sValue.astype(np.uint8))
         vImage = Image.fromarray(self.vValue.astype(np.uint8))
         hsvImage = Image.fromarray((np.dstack((self.hValue,self.sValue,self.vValue)) * 255).astype(np.uint8))
-        hsvImage.show()
-        hImage.show()
-        sImage.show()
-        vImage.show()
+        # hsvImage.show()
+        # hImage.show()
+        # sImage.show()
+        # vImage.show()
         resultImage.show()
         
         
@@ -180,5 +180,5 @@ Algorithm = K_Means(k=3, data=twoDim_array, row=row, col=col)
 Algorithm.clustering(4)
 Algorithm.quantization()
 Algorithm.bgrToHsv()
-Algorithm.valueToText()
-# Algorithm.show()
+# Algorithm.valueToText()
+Algorithm.show()
