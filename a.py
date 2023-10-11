@@ -1,4 +1,3 @@
-import numpy as np
-
-hValue = np.array([[0,0,0] for _ in range(10)])
-print(hValue)
+a=10.1111
+b = round(a)
+print(b, type(b))
