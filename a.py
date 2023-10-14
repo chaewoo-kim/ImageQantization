@@ -1,3 +1,3 @@
-a=10.1111
-b = round(a)
-print(b, type(b))
+a = [1,2,3,4]
+b = [a, [1,2]]
+print(len(b))

@@ -7,7 +7,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 #해당 이미지를 배열로 변환
-img = Image.open("/Users/chaewookim/Desktop/ColorClassification/blue/1.jpg")
+img = Image.open("/Users/gimchaeu/Desktop/알약 과제/ColorClassification/Brown/13.jpg")
 pix = np.array(img)
 
 
@@ -38,8 +38,55 @@ class K_Means:
         self.color = ["Color" for _ in range(self.N)] #세분화 되었을 때의 색
         self.colorCount = [0 for _ in range(12)] #각 색이 몇 개인지 확인하는 용도. 빨/주/노/연/녹/청/파/남/보/검/회/흰 순서
         self.colorList = ["Red", "Orange", "Yellow", "LightGreen", "Green", "Cyan", "Blue", "Indigo", "Magenta", "Black", "Grey", "White"]
-        self.specificColorCount = [0 for _ in range(43)]
-        self.specificColorList = ["Red(Y90R)", "Red(Y80R)", "Orange(Y70R)", "Orange(Y60R)", "Orange(Y50R)", "Orange(Y40R)", "Orange(Y30R)", "Orange(Y20R)", "Yellow(Y10R)", "Yellow(Y)", "Yellow(G90Y)", "Yellow(G80Y)", "LightGreen(G70Y)", "LightGreen(G60Y)", "LightGreen(G50Y)", "LightGreen(G40Y)", "LightGreen(G30Y)", "Green(G20Y)", "Green(G10Y)", "Green(G)", "Green(B90G)", "Green(B80G)", "Cyan(B70G)", "Cyan(B60G)", "Cyan(B50G)", "Cyan(B40G)", "Cyan(B30G)", "Cyan(B20G)", "Blue(B10G)", "Blue(B)", "Blue(R90B)", "Blue(R80B)", "Indigo(R70B)", "Indigo(R60B)", "Magenta(R50B)", "Magenta(R40B)", "Magenta(R30B)", "Magenta(R20B)", "Red(R10B)", "Red(R)", "Black", "Grey", "White"]
+        self.redCount = [0 for _ in range(4)]
+        self.orangeCount = [0 for _ in range(6)]
+        self.yellowCount = [0 for _ in range(4)]
+        self.lightGreenCount = [0 for _ in range(5)]
+        self.greenCount = [0 for _ in range(5)]
+        self.cyanCount = [0 for _ in range(6)]
+        self.blueCount = [0 for _ in range(4)]
+        self.indigoCount = [0 for _ in range(2)]
+        self.magentaCount = [0 for _ in range(4)]
+        self.blackCount = [0]
+        self.greyCount = [0]
+        self.whiteCount = [0]
+        self.allColorCount = [self.redCount, self.orangeCount, self.yellowCount, self.lightGreenCount, self.greenCount, self.cyanCount, self.blueCount, self.indigoCount, self.magentaCount, self.blackCount, self.greyCount, self.whiteCount]
+        #ColorType
+        self.redColor = ["Red(R10B)", "Red(R)", "Red(Y90R)", "Red(Y80R)"]
+        self.orangeColor = ["Orange(Y70R)", "Orange(Y60R)", "Orange(Y50R)", "Orange(Y40R)", "Orange(Y30R)", "Orange(Y20R)"]
+        self.yellowColor = ["Yellow(Y10R)", "Yellow(Y)", "Yellow(G90Y)", "Yellow(G80Y)"]
+        self.lightGreenColor = ["LightGreen(G70Y)", "LightGreen(G60Y)", "LightGreen(G50Y)", "LightGreen(G40Y)", "LightGreen(G30Y)"]
+        self.greenColor = ["Green(G20Y)", "Green(G10Y)", "Green(G)", "Green(B90G)", "Green(B80G)"]
+        self.cyanColor = ["Cyan(B70G)", "Cyan(B60G)", "Cyan(B50G)", "Cyan(B40G)", "Cyan(B30G)", "Cyan(B20G)"]
+        self.blueColor = ["Blue(B10G)", "Blue(B)", "Blue(R90B)", "Blue(R80B)"]
+        self.indigoColor = ["Indigo(R70B)", "Indigo(R60B)"]
+        self.magentaColor = ["Magenta(R50B)", "Magenta(R40B)", "Magenta(R30B)", "Magenta(R20B)"]
+        self.blackColor = ["Black"]
+        self.greyColor = ["Grey"]
+        self.whiteColor = ["White"]
+        self.allColor = [self.redColor, self.orangeColor, self.yellowColor, self.lightGreenColor, self.greenColor, self.cyanColor, self.blueColor, self.indigoColor, self.magentaColor, self.blackColor, self.greyColor, self.whiteColor]
+        #StartColor
+        self.redStartColor = [337, 338, 346, 1] 
+        self.orangeStartColor = [12, 20, 25, 30, 33, 37]
+        self.yellowStartColor = [41, 44, 51, 54]
+        self.lightGreenStartColor = [56, 61, 65, 68, 75]
+        self.greenStartColor = [89, 113, 150, 161, 166]
+        self.cyanStartColor = [171, 173, 176, 178, 181, 184]
+        self.blueStartColor = [187, 190, 198, 200]
+        self.indigoStartColor = [209, 235]
+        self.magentaStartColor = [260, 286, 314, 326]
+        self.allStartColor = [self.redStartColor, self.orangeStartColor, self.yellowStartColor, self.lightGreenStartColor, self.greenStartColor, self.cyanStartColor, self.blueStartColor, self.indigoStartColor, self.magentaStartColor]
+        #EndColor
+        self.redEndColor = [337, 345, 0, 11]
+        self.orangeEndColor = [19, 24, 29, 32, 36, 40]
+        self.yellowEndColor = [43, 50, 53, 55]
+        self.lightGreenEndColor = [60, 64, 67, 74, 88]
+        self.greenEndColor = [112, 149, 160, 165, 170]
+        self.cyanEndColor = [172, 175, 177, 180, 183, 186]
+        self.blueEndColor = [189, 197, 199, 208]
+        self.indigoEndColor = [234, 259]
+        self.magentaEndColor = [285, 313, 325, 336]
+        self.allEndColor = [self.redEndColor, self.orangeEndColor, self.yellowEndColor, self.lightGreenEndColor, self.greenEndColor, self.cyanEndColor, self.blueEndColor, self.indigoEndColor, self.magentaEndColor]
 
 
         #랜덤으로 초기 중심점 k개 설정
@@ -122,164 +169,88 @@ class K_Means:
             self.sValue[input_row][input_col] = round(s*100)
             self.vValue[input_row][input_col] = round(v*100)
 
-    
-    #세분화된 색상을 넣어주는 함수
-    def colorInput(self, specificColor, colorNumber, address):
-        self.color[address] = specificColor
+
+    def colorInput(self, index, colorNumber, nth):
+        #1. 색 소분류 결과 값 저장
+        #2. 색 대분류 카운트 증가
+        #3. 색 소분류 카운트 증가
+        self.color[index] = self.allColor[colorNumber][nth]
         self.colorCount[colorNumber] = self.colorCount[colorNumber] + 1
-        self.specificColorCount[self.specificColorList.index(specificColor)] = self.specificColorCount[self.specificColorList.index(specificColor)] + 1
+        self.allColorCount[colorNumber][nth] = self.allColorCount[colorNumber][nth] + 1
 
+    #색 소분류
+    def colorSmallClassify(self, index, colorNumber):
+        for i in range(len(self.allColor[colorNumber])):
+            if ((self.hValue[int(index/col)][int(index%col)] > (self.allStartColor[colorNumber][i] - 1)) and (self.hValue[int(index/col)][int(index%col)] <= self.allEndColor[colorNumber][i])):
+                Algorithm.colorInput(index, colorNumber, i)
 
-    #각 색을 12가지로 대분류하는 함수
-    def red(self, address):
-        if (self.hValue[int(address/col)][int(address%col)] > 343):
-            Algorithm.colorInput("Red(Y90R)", 0, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 0) and (self.hValue[int(address/col)][int(address%col)] < 12)):
-            Algorithm.colorInput("Red(Y80R)", 0, address)
-        elif (self.hValue[int(address/col)][int(address%col)] == 337):
-            Algorithm.colorInput("Red(R10B)", 0, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 337) and (self.hValue[int(address/col)][int(address%col)] < 344)):
-            Algorithm.colorInput("Red(R)", 0, address)
-    def orange(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 11) and (self.hValue[int(address/col)][int(address%col)] < 20)):
-            Algorithm.colorInput("Orange(Y70R)", 1, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 19) and (self.hValue[int(address/col)][int(address%col)] < 25)):
-            Algorithm.colorInput("Orange(Y60R)", 1, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 24) and (self.hValue[int(address/col)][int(address%col)] < 30)):
-            Algorithm.colorInput("Orange(Y50R)", 1, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 29) and (self.hValue[int(address/col)][int(address%col)] < 33)):
-            Algorithm.colorInput("Orange(Y40R)", 1, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 32) and (self.hValue[int(address/col)][int(address%col)] < 37)):
-            Algorithm.colorInput("Orange(Y30R)", 1, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 36) and (self.hValue[int(address/col)][int(address%col)] < 41)):
-            Algorithm.colorInput("Orange(Y20R)", 1, address)
-    def yellow(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 40) and (self.hValue[int(address/col)][int(address%col)] < 44)):
-            Algorithm.colorInput("Yellow(Y10R)", 2, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 43) and (self.hValue[int(address/col)][int(address%col)] < 51)):
-            Algorithm.colorInput("Yellow(Y)", 2, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 50) and (self.hValue[int(address/col)][int(address%col)] < 54)):
-            Algorithm.colorInput("Yellow(G90Y)", 2, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 53) and (self.hValue[int(address/col)][int(address%col)] < 56)):
-            Algorithm.colorInput("Yellow(G80Y)", 2, address)
-    def lightGreen(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 42) and (self.hValue[int(address/col)][int(address%col)] < 57)):
-            Algorithm.colorInput("LightGreen(G70Y)", 3, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 56) and (self.hValue[int(address/col)][int(address%col)] < 65)):
-            Algorithm.colorInput("LightGreen(G60Y)", 3, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 64) and (self.hValue[int(address/col)][int(address%col)] < 68)):
-            Algorithm.colorInput("LightGreen(G50Y)", 3, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 67) and (self.hValue[int(address/col)][int(address%col)] < 75)):
-            Algorithm.colorInput("LightGreen(G40Y)", 3, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 74) and (self.hValue[int(address/col)][int(address%col)] < 89)):
-            Algorithm.colorInput("LightGreen(G30Y)", 3, address)
-    def green(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 88) and (self.hValue[int(address/col)][int(address%col)] < 113)):
-            Algorithm.colorInput("Green(G20Y)", 4, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 112) and (self.hValue[int(address/col)][int(address%col)] < 150)):
-            Algorithm.colorInput("Green(G10Y)", 4, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 149) and (self.hValue[int(address/col)][int(address%col)] < 161)):
-            Algorithm.colorInput("Green(G)", 4, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 160) and (self.hValue[int(address/col)][int(address%col)] < 166)):
-            Algorithm.colorInput("Green(B90G)", 4, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 165) and (self.hValue[int(address/col)][int(address%col)] < 171)):
-            Algorithm.colorInput("Green(B80G)", 4, address)
-    def cyan(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 170) and (self.hValue[int(address/col)][int(address%col)] < 173)):
-            Algorithm.colorInput("Cyan(B70G)", 5, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 172) and (self.hValue[int(address/col)][int(address%col)] < 176)):
-            Algorithm.colorInput("Cyan(B60G)", 5, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 175) and (self.hValue[int(address/col)][int(address%col)] < 178)):
-            Algorithm.colorInput("Cyan(B50G)", 5, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 177) and (self.hValue[int(address/col)][int(address%col)] < 181)):
-            Algorithm.colorInput("Cyan(B40G)", 5, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 180) and (self.hValue[int(address/col)][int(address%col)] < 184)):
-            Algorithm.colorInput("Cyan(B30G)", 5, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 183) and (self.hValue[int(address/col)][int(address%col)] < 187)):
-            Algorithm.colorInput("Cyan(B20G)", 5, address)
-    def blue(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 186) and (self.hValue[int(address/col)][int(address%col)] < 190)):
-            Algorithm.colorInput("Blue(B10G)", 6, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 189) and (self.hValue[int(address/col)][int(address%col)] < 198)):
-            Algorithm.colorInput("Blue(B)", 6, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 197) and (self.hValue[int(address/col)][int(address%col)] < 200)):
-            Algorithm.colorInput("Blue(R90B)", 6, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 199) and (self.hValue[int(address/col)][int(address%col)] < 209)):
-            Algorithm.colorInput("Blue(R80B)", 6, address)
-    def indigo(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 208) and (self.hValue[int(address/col)][int(address%col)] < 235)):
-            Algorithm.colorInput("Indigo(R70B)", 7, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 234) and (self.hValue[int(address/col)][int(address%col)] < 260)):
-            Algorithm.colorInput("Indigo(R60B)", 7, address)
-    def magenta(self, address):
-        if ((self.hValue[int(address/col)][int(address%col)] > 259) and (self.hValue[int(address/col)][int(address%col)] < 286)):
-            Algorithm.colorInput("Magenta(R50B)", 8, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 285) and (self.hValue[int(address/col)][int(address%col)] < 314)):
-            Algorithm.colorInput("Magenta(R40B)", 8, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 313) and (self.hValue[int(address/col)][int(address%col)] < 326)):
-            Algorithm.colorInput("Magenta(R30B)", 8, address)
-        elif ((self.hValue[int(address/col)][int(address%col)] > 325) and (self.hValue[int(address/col)][int(address%col)] < 337)):
-            Algorithm.colorInput("Magenta(R20B)", 8, address)
+    #색 대분류
+    def colorLargeClassify(self, index):
+        if (self.hValue[int(index/col)][int(index%col)] < self.cyanStartColor[0]):
+            if (self.hValue[int(index/col)][int(index%col)] < self.yellowStartColor[0]):
+                if (self.hValue[int(index/col)][int(index%col)] < self.orangeStartColor[0]):
+                    #Red
+                    Algorithm.colorSmallClassify(index, 0)
+                else:
+                    #Orange
+                    Algorithm.colorSmallClassify(index, 1)
+            else:
+                if (self.hValue[int(index/col)][int(index%col)] < self.greenStartColor[0]):
+                    if (self.hValue[int(index/col)][int(index%col)] < self.lightGreenStartColor[0]):
+                        #Yellow
+                        Algorithm.colorSmallClassify(index, 2)
+                    else:
+                        #LightGreen
+                        Algorithm.colorSmallClassify(index, 3)
+                else:
+                    #green
+                    Algorithm.colorSmallClassify(index, 4)
+        else:
+            if (self.hValue[int(index/col)][int(index%col)] < self.indigoStartColor[0]):
+                if (self.hValue[int(index/col)][int(index%col)] < self.blueStartColor[0]):
+                    #Cyan
+                    Algorithm.colorSmallClassify(index, 5)
+                else:
+                    #Blue
+                    Algorithm.colorSmallClassify(index, 6)
+            else:
+                if (self.hValue[int(index/col)][int(index%col)] < self.magentaStartColor[0]):
+                    #indigo
+                    Algorithm.colorSmallClassify(index, 7)
+                else:
+                    if (self.hValue[int(index/col)][int(index%col)] <= self.magentaEndColor[len(self.magentaEndColor)-1]):
+                        #Magenta
+                        Algorithm.colorSmallClassify(index, 8)
+                    else:
+                        #Red
+                        Algorithm.colorSmallClassify(index, 0)
 
 
     def colorFiguration(self):
-        #여기서 색에 대한 11가지 분류를 잡고 각 함수를 호출해서 세분화
+        #대분류, 소분류 함수들 호출
         for i in range(self.N):
-            if (((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)) or ((self.sValue[int(i/col)][int(i%col)] <= 20) and (self.vValue[int(i/col)][int(i%col)] <= 30)) or ((self.sValue[int(i/col)][int(i%col)] <= 30) and (self.vValue[int(i/col)][int(i%col)] <= 40))):
-                #Black
-                Algorithm.colorInput("Black", 9, i)
-            if ((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 70) and (self.vValue[int(i/col)][int(i%col)] > 30)):
-                #Grey
-                Algorithm.colorInput("Grey", 10, i)
-            if ((self.hValue[int(i/col)][int(i%col)] == 0) and (self.sValue[int(i/col)][int(i%col)] == 0) and (self.vValue[int(i/col)][int(i%col)] == 100)):
-                #White
-                Algorithm.colorInput("White", 11, i)
+            #검흰회색을 제외한 색들은 s,v를 고려하지 않기 때문에 검흰회색을 나중에 진행
+            Algorithm.colorLargeClassify(i)
 
-            if ((self.hValue[int(i/col)][int(i%col)] < 12) or (self.hValue[int(i/col)][int(i%col)] > 336)):
-                #Red
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.red(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 41):
-                #Orange
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.orange(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 56):
-                #Yellow
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.yellow(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 89):
-                #LightGreen
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.lightGreen(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 171):
-                #Green
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.green(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 187):
-                #Cyan
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.cyan(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 209):
-                #Blue
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.blue(i)
-            elif (self.hValue[int(i/col)][int(i%col)] < 260):
-                #Indigo
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.indigo(i)
-            else:
-                #Magenta
-                if (self.color[i] != "Color"):
-                    break
-                Algorithm.magenta(i)
+            #Black
+            #1. 색 소분류 결과 값 저장
+            #2. 색 대분류 카운트 증가
+            #3. 색 소분류 카운트 증가
+            if ((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
+                Algorithm.colorInput(i, 9, 0)
+            if ((self.sValue[int(i/col)][int(i%col)] <= 20) and (self.sValue[int(i/col)][int(i%col)] > 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
+                Algorithm.colorInput(i, 9, 0)
+            if ((self.sValue[int(i/col)][int(i%col)] <= 30) and (self.sValue[int(i/col)][int(i%col)] > 20) and (self.vValue[int(i/col)][int(i%col)] <= 40)):
+                Algorithm.colorInput(i, 9, 0)
+
+            #Grey            
+            if ((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 70) and (self.vValue[int(i/col)][int(i%col)] > 30)):
+                Algorithm.colorInput(i, 10, 0)
+
+            #White
+            if ((self.hValue[int(i/col)][int(i%col)] == 0) and (self.sValue[int(i/col)][int(i%col)] == 0) and (self.vValue[int(i/col)][int(i%col)] == 100)):
+                Algorithm.colorInput(i, 11, 0)
+
         
         colorText = open("colorText.txt", 'w+')
         colorToString = ''.join(str(self.color))
@@ -288,9 +259,10 @@ class K_Means:
 
         for i in range(len(self.colorCount)):
             print(self.colorList[i], " : ", self.colorCount[i])
-        print("\n")
-        for i in range(len(self.specificColorList)):
-            print(self.specificColorList[i], " : ", self.specificColorCount[i])
+        print("------------------------------------")
+        for i in range(len(self.colorList)):
+            for j in range(len(self.allColorCount[i])):
+                print(self.allColor[i][j], " : ", self.allColorCount[i][j])
         print(col*row)
 
 
