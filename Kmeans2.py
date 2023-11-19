@@ -103,7 +103,7 @@ class K_Means:
         #0,0,0,0 나오면 다음른 것을 픽하기 위해 넉넉하게 tmp 값 뽑음
         tmp = random.sample(range(0,col*row),self.k)
         for i in range(self.k):
-            self.standard = self.data[tmp[i]]
+            self.standard[i] = self.data[tmp[i]]
 
         #0번째부터 시작하기 위해 row, col 모두 1씩 감소
 
