@@ -1,4 +1,4 @@
-import numpy as np
-
-hValue = np.array([[0,0,0] for _ in range(10)])
-print(hValue)
+a = [1,2,3]
+b = [1,2,3]
+if (a != b):
+    print("NOT SAME")
