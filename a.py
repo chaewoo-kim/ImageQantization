@@ -1,3 +1,4 @@
-a = [1,2,3,4]
-b = [a, [1,2]]
-print(len(b))
+a = [1,2,3]
+b = [1,2,3]
+if (a != b):
+    print("NOT SAME")

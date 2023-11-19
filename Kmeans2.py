@@ -7,8 +7,9 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 #해당 이미지를 배열로 변환
-img = Image.open("/Users/gimchaeu/Desktop/알약 과제/ColorClassification/Brown/13.jpg")
+img = Image.open("/Users/chaewookim/Desktop/ColorClassification/Blue/4.jpg")
 pix = np.array(img)
+k=5
 
 
 #3차원 배열 pix를 2차원 배열로 변환 뒤 floor 열 삭제
@@ -35,6 +36,14 @@ class K_Means:
         self.hValue = np.zeros((row, col), dtype = float)
         self.sValue = np.zeros((row, col), dtype = float)
         self.vValue = np.zeros((row, col), dtype = float)
+        self.bgr = [[0,0,0] for _ in range(self.k)]
+        self.hsv = [[0,0,0] for _ in range(self.k)]
+
+        self.eachCount = [0 for _ in range(self.k)]
+
+        self.backgroundColor = [0 for _ in range(self.k-1)]
+
+        #Color
         self.color = ["Color" for _ in range(self.N)] #세분화 되었을 때의 색
         self.colorCount = [0 for _ in range(12)] #각 색이 몇 개인지 확인하는 용도. 빨/주/노/연/녹/청/파/남/보/검/회/흰 순서
         self.colorList = ["Red", "Orange", "Yellow", "LightGreen", "Green", "Cyan", "Blue", "Indigo", "Magenta", "Black", "Grey", "White"]
@@ -128,6 +137,7 @@ class K_Means:
             for j in range(self.k):
                 if (self.Cluster[i] == j):
                     self.data[i] = self.standard[j]
+                    self.eachCount[j] = self.eachCount[j]+1
         self.resultCluster = self.data.reshape((pix.shape))
 
 
@@ -165,24 +175,65 @@ class K_Means:
                     
             input_row = int(i/(col))
             input_col = int(i%(col))
-            self.hValue[input_row][input_col] = h
+            self.hValue[input_row][input_col] = round(h)
             self.sValue[input_row][input_col] = round(s*100)
             self.vValue[input_row][input_col] = round(v*100)
+
+    def bgrToHsvOne(self, input):
+        #bgr을 hsv로 변환
+        maximum, minimum = 0, 0
+        r = float(input[0])/255
+        g = float(input[1])/255
+        b = float(input[2])/255
+        maximum = max(r,g,b)
+        minimum = min(r,g,b)
+
+        v = maximum
+        h = 0
+        s = 0
+
+        if ((r == g) and (g == b)):
+            v = v + 1/255
+
+        if (v == 0):
+            h = 0
+            s = 0
+        else:
+            s = 1-(minimum/v)
+            if (v == r):
+                h = 60*(g-b)/(v-minimum)
+            elif (v == g):
+                h = 120 + (60*(b-r))/(v-minimum)
+            elif (v == b):
+                h = 240 + (60*(r-g))/(v-minimum)
+            if (h < 0):
+                h += 360
+                h /= 360
+                
+        return [round(h), round(s*100), round(v*100)]
 
 
     def colorInput(self, index, colorNumber, nth):
         #1. 색 소분류 결과 값 저장
         #2. 색 대분류 카운트 증가
         #3. 색 소분류 카운트 증가
-        self.color[index] = self.allColor[colorNumber][nth]
-        self.colorCount[colorNumber] = self.colorCount[colorNumber] + 1
-        self.allColorCount[colorNumber][nth] = self.allColorCount[colorNumber][nth] + 1
+        #검회흰색을 넣고 이중으로 카운트 하지 않기 위한 조건문 추가
+        if (self.color[index] == "Color"):
+            self.color[index] = self.allColor[colorNumber][nth]
+            self.colorCount[colorNumber] = self.colorCount[colorNumber] + 1
+            self.allColorCount[colorNumber][nth] = self.allColorCount[colorNumber][nth] + 1
+
 
     #색 소분류
     def colorSmallClassify(self, index, colorNumber):
         for i in range(len(self.allColor[colorNumber])):
             if ((self.hValue[int(index/col)][int(index%col)] > (self.allStartColor[colorNumber][i] - 1)) and (self.hValue[int(index/col)][int(index%col)] <= self.allEndColor[colorNumber][i])):
                 Algorithm.colorInput(index, colorNumber, i)
+                break
+            #hValue가 346~0의 범위에 있을 때
+            if ((colorNumber == 0) and (self.allStartColor[colorNumber][i] == 1)):
+                if ((self.hValue[int(index/col)][int(index%col)] >= (self.allStartColor[colorNumber][i] - 1)) or (self.hValue[int(index/col)][int(index%col)] <= self.allEndColor[colorNumber][i])):
+                    Algorithm.colorInput(index, colorNumber, i)
 
     #색 대분류
     def colorLargeClassify(self, index):
@@ -229,13 +280,7 @@ class K_Means:
     def colorFiguration(self):
         #대분류, 소분류 함수들 호출
         for i in range(self.N):
-            #검흰회색을 제외한 색들은 s,v를 고려하지 않기 때문에 검흰회색을 나중에 진행
-            Algorithm.colorLargeClassify(i)
-
             #Black
-            #1. 색 소분류 결과 값 저장
-            #2. 색 대분류 카운트 증가
-            #3. 색 소분류 카운트 증가
             if ((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
                 Algorithm.colorInput(i, 9, 0)
             if ((self.sValue[int(i/col)][int(i%col)] <= 20) and (self.sValue[int(i/col)][int(i%col)] > 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
@@ -248,8 +293,11 @@ class K_Means:
                 Algorithm.colorInput(i, 10, 0)
 
             #White
-            if ((self.hValue[int(i/col)][int(i%col)] == 0) and (self.sValue[int(i/col)][int(i%col)] == 0) and (self.vValue[int(i/col)][int(i%col)] == 100)):
+            if ((self.sValue[int(i/col)][int(i%col)] == 0) and (self.vValue[int(i/col)][int(i%col)] == 100)):
                 Algorithm.colorInput(i, 11, 0)
+
+            #나머지 색들은 s,v를 고려하지 않기 때문에 검흰회색보다 나중에 실행
+            Algorithm.colorLargeClassify(i)
 
         
         colorText = open("colorText.txt", 'w+')
@@ -257,25 +305,53 @@ class K_Means:
         colorText.write(colorToString)
         colorText.close()
 
+        sum = 0
+        print("  R  G  B")
+        for i in range(self.k):
+            print(self.standard[i], " : ", self.eachCount[i])
+            sum = sum + self.eachCount[i]
+
+        print("----------------")
+        print("  H  S  V")
+        for i in range(self.k):
+            print(Algorithm.bgrToHsvOne(self.standard[i]))
+
+        print("------------------------------------")        
         for i in range(len(self.colorCount)):
             print(self.colorList[i], " : ", self.colorCount[i])
         print("------------------------------------")
         for i in range(len(self.colorList)):
             for j in range(len(self.allColorCount[i])):
                 print(self.allColor[i][j], " : ", self.allColorCount[i][j])
-        print(col*row)
+        print("------------------------------------")
+        print("합 : ",sum)
+        print("총 개수 : ", col*row)
+
+
+    def backgroundDelete(self):
+        background = (100,100,100,0)
+
+        self.resultCluster = self.data.reshape((pix.shape))
+        resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
+
+        self.newData = resultImage.convert("RGBA")
+
+        for i in range(row):
+            for j in range(col):
+                if (self.color[i*row + col] == "White"):
+                    self.newData[i][j] = background
 
 
     def valueToText(self):
-    #     self.greenImage = self.resultCluster.copy()
-    #     self.redImage = self.resultCluster.copy()
-    #     self.blueImage = self.resultCluster.copy()
-    #     self.blueImage[:,:,1] = 0
-    #     self.blueImage[:,:,0] = 0
-    #     self.greenImage[:,:,0] = 0
-    #     self.greenImage[:,:,2] = 0
-    #     self.redImage[:,:,1] = 0
-    #     self.redImage[:,:,2] = 0
+        # self.greenImage = self.resultCluster.copy()
+        # self.redImage = self.resultCluster.copy()
+        # self.blueImage = self.resultCluster.copy()
+        # self.blueImage[:,:,1] = 0
+        # self.blueImage[:,:,0] = 0
+        # self.greenImage[:,:,0] = 0
+        # self.greenImage[:,:,2] = 0
+        # self.redImage[:,:,1] = 0
+        # self.redImage[:,:,2] = 0
         hValueText = open("h.txt", 'w+')
         hToString = ''.join(str(self.hValue))
         hValueText.write(hToString)
@@ -288,20 +364,20 @@ class K_Means:
         vToString = ''.join(str(self.vValue))
         vValueText.write(vToString)
         vValueText.close()
-    #     blueValueText = open("blue.txt", 'w+')
-    #     blueToString = ''.join(str(self.blueImage))
-    #     blueValueText.write(blueToString)
-    #     greenValueText = open("green.txt", 'w+')
-    #     greenToString = ''.join(str(self.greenImage))
-    #     greenValueText.write(greenToString)
-    #     redValueText = open("red.txt", 'w+')
-    #     redToString = ''.join(str(self.redImage))
-    #     redValueText.write(redToString)    
+        # blueValueText = open("blue.txt", 'w+')
+        # blueToString = ''.join(str(self.blueImage))
+        # blueValueText.write(blueToString)
+        # greenValueText = open("green.txt", 'w+')
+        # greenToString = ''.join(str(self.greenImage))
+        # greenValueText.write(greenToString)
+        # redValueText = open("red.txt", 'w+')
+        # redToString = ''.join(str(self.redImage))
+        # redValueText.write(redToString)    
 
 
     def show(self):
-        self.resultCluster = self.data.reshape((pix.shape))
-        resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
+        # self.resultCluster = self.data.reshape((pix.shape))
+        # resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
         # hImage = Image.fromarray(self.hValue.astype(np.uint8))
         # sImage = Image.fromarray(self.sValue.astype(np.uint8))
         # vImage = Image.fromarray(self.vValue.astype(np.uint8))
@@ -310,13 +386,16 @@ class K_Means:
         # hImage.show()
         # sImage.show()
         # vImage.show()
-        resultImage.show()
+        self.newData.show()
         
         
-Algorithm = K_Means(k=3, data=twoDim_array, row=row, col=col)
+Algorithm = K_Means(k, data=twoDim_array, row=row, col=col)
 Algorithm.clustering(4)
 Algorithm.quantization()
 Algorithm.bgrToHsv()
 Algorithm.colorFiguration()
 Algorithm.valueToText()
+
+Algorithm.backgroundDelete()
+
 Algorithm.show()
