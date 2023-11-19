@@ -3,12 +3,13 @@ import numpy as np
 import random
 import sys
 import math
+from rembg import remove
 np.set_printoptions(threshold=sys.maxsize)
 
 
 #해당 이미지를 배열로 변환
 img = Image.open("/Users/chaewookim/Desktop/ColorClassification/Blue/4.jpg")
-pix = np.array(img)
+pix = np.array(remove(img))
 k=5
 
 
@@ -99,9 +100,11 @@ class K_Means:
 
 
         #랜덤으로 초기 중심점 k개 설정
+        #0,0,0,0 나오면 다음른 것을 픽하기 위해 넉넉하게 tmp 값 뽑음
         tmp = random.sample(range(0,col*row),self.k)
         for i in range(self.k):
-            self.standard[i] = self.data[tmp[i]]
+            self.standard = self.data[tmp[i]]
+
         #0번째부터 시작하기 위해 row, col 모두 1씩 감소
 
 
@@ -127,7 +130,7 @@ class K_Means:
                         gCount += 1
                         bSum += self.data[j][2]
                         bCount += 1
-                self.standard[i] = [int(rSum/rCount), int(gSum/gCount), int(bSum/bCount)]
+                self.standard[i] = [int(rSum/rCount), int(gSum/gCount), int(bSum/bCount), 255]
             
         
     def quantization(self):
@@ -138,16 +141,19 @@ class K_Means:
                 if (self.Cluster[i] == j):
                     self.data[i] = self.standard[j]
                     self.eachCount[j] = self.eachCount[j]+1
-        self.resultCluster = self.data.reshape((pix.shape))
+        
+        file = open("two", 'w+')
+        toString = ''.join(str(self.data))
+        file.write(toString)
 
 
     def bgrToHsv(self):
         #bgr을 hsv로 변환
         for i in range(self.N):
             maximum, minimum = 0, 0
-            r = float(self.data[i][0])/255
-            g = float(self.data[i][1])/255
-            b = float(self.data[i][2])/255
+            r = float(self.bgRemoveArray[i][0])/255
+            g = float(self.bgRemoveArray[i][1])/255
+            b = float(self.bgRemoveArray[i][2])/255
             maximum = max(r,g,b)
             minimum = min(r,g,b)
 
@@ -329,17 +335,14 @@ class K_Means:
 
 
     def backgroundDelete(self):
-        background = (100,100,100,0)
-
         self.resultCluster = self.data.reshape((pix.shape))
         resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
 
-        self.newData = resultImage.convert("RGBA")
-
-        for i in range(row):
-            for j in range(col):
-                if (self.color[i*row + col] == "White"):
-                    self.newData[i][j] = background
+        # self.beforeData = resultImage.convert("RGBA")
+        # self.newData = remove(self.beforeData)
+        self.newData = remove(resultImage)
+        self.bgRemoveArray = np.column_stack(((np.repeat(np.arange(row), col)), pix.reshape(row*col, -1)))
+        self.bgRemoveArray = np.delete(self.bgRemoveArray, 0, axis=1)
 
 
     def valueToText(self):
@@ -386,16 +389,18 @@ class K_Means:
         # hImage.show()
         # sImage.show()
         # vImage.show()
+        self.resultCluster = self.data.reshape((pix.shape))
+        resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
         self.newData.show()
         
         
 Algorithm = K_Means(k, data=twoDim_array, row=row, col=col)
 Algorithm.clustering(4)
 Algorithm.quantization()
-Algorithm.bgrToHsv()
-Algorithm.colorFiguration()
-Algorithm.valueToText()
 
 Algorithm.backgroundDelete()
 
+Algorithm.bgrToHsv()
+Algorithm.colorFiguration()
+# Algorithm.valueToText()
 Algorithm.show()
