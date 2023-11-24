@@ -1,4 +1,5 @@
 from PIL import Image
+import pandas as pd
 import numpy as np
 import random
 import sys
@@ -98,14 +99,42 @@ class K_Means:
         self.magentaEndColor = [285, 313, 325, 336]
         self.allEndColor = [self.redEndColor, self.orangeEndColor, self.yellowEndColor, self.lightGreenEndColor, self.greenEndColor, self.cyanEndColor, self.blueEndColor, self.indigoEndColor, self.magentaEndColor]
 
+        #엑셀 파일용 변수
+        self.excRgb = ["" for _ in range(self.k)] #rgb 값 저장
+        self.excHsv = ["" for _ in range(self.k)] #hsv 값 저장
+        self.excBigColor = ["Color" for _ in range(self.k)] #해당 중심점의 대분류 색상
+        self.excSmallColor = ["Color" for _ in range(self.k)] #해당 중심점의 소분류 색상
+        self.excRatio = [0 for _ in range(self.k)] #해당 색이 차지하는 비율
 
         #랜덤으로 초기 중심점 k개 설정
-        #0,0,0,0 나오면 다음른 것을 픽하기 위해 넉넉하게 tmp 값 뽑음
         tmp = random.sample(range(0,col*row),self.k)
         for i in range(self.k):
-            self.standard[i] = self.data[tmp[i]]
+            self.standard[i] = [self.data[tmp][0], self.data[tmp][1], self.data[tmp][2]]
 
-        #0번째부터 시작하기 위해 row, col 모두 1씩 감소
+        #비교해서 0000이면 무한반복
+        for i in range(self.k):
+            if (self.standard[i] == [0,0,0,0]):
+                while(1):
+                    tmpp = random.sample(range(0,col*row), 1)
+                    if (self.data[tmpp] == [0,0,0,0]).all():
+                        continue
+                    else:
+                        self.standard[i] = [self.data[tmpp][0], self.data[tmpp][1], self.data[tmpp][2]]
+                        break
+        #같은 값이 없도록
+        for i in range(self.k):
+            for j in range(i+1, self.k):
+                while(1):
+                    if (self.standard[i] == self.standard[j]).all():
+                        tmpp = random.sample(range(0,col*row), 1)
+                        if ((self.data[tmpp] == [0,0,0,0]).all() or (self.data[tmpp] == self.standard[j]).all()):
+                            continue
+                        else:
+                            self.standard[j] = [self.data[tmpp][0], self.data[tmpp][1], self.data[tmpp][2]]
+                            break
+                    else:
+                        break
+             
 
 
     #클러스터링 하는 함수
@@ -131,8 +160,8 @@ class K_Means:
                         bSum += self.data[j][2]
                         bCount += 1
                 self.standard[i] = [int(rSum/rCount), int(gSum/gCount), int(bSum/bCount), 255]
+                
             
-        
     def quantization(self):
         #색상 양자화
         #데이터의 값을 가장 가까운 중심점의 값으로 변경
@@ -140,8 +169,12 @@ class K_Means:
             for j in range(self.k):
                 if (self.Cluster[i] == j):
                     self.data[i] = self.standard[j]
+                    self.excRgb[j] = ''.join(str([self.data[i][0], self.data[i][1], self.data[i][2]]))
                     self.eachCount[j] = self.eachCount[j]+1
         
+        for i in range(self.k):
+            self.excRatio[i] = self.eachCount[i]/(row*col)
+
         file = open("two", 'w+')
         toString = ''.join(str(self.data))
         file.write(toString)
@@ -184,6 +217,10 @@ class K_Means:
             self.hValue[input_row][input_col] = round(h)
             self.sValue[input_row][input_col] = round(s*100)
             self.vValue[input_row][input_col] = round(v*100)
+
+            for j in range(self.k):
+                if (self.data[i] == self.standard[j]).all():
+                    self.excHsv[j] = ''.join(str([round(h), round(s*100), round(v*100)]))
 
     def bgrToHsvOne(self, input):
         #bgr을 hsv로 변환
@@ -228,6 +265,11 @@ class K_Means:
             self.color[index] = self.allColor[colorNumber][nth]
             self.colorCount[colorNumber] = self.colorCount[colorNumber] + 1
             self.allColorCount[colorNumber][nth] = self.allColorCount[colorNumber][nth] + 1
+
+            for i in range(self.k):
+                if (self.data[index] == self.standard[i]).all():
+                    self.excSmallColor[i] = self.allColor[colorNumber][nth]
+                    self.excBigColor[i] = self.colorList[colorNumber]
 
 
     #색 소분류
@@ -287,19 +329,21 @@ class K_Means:
         #대분류, 소분류 함수들 호출
         for i in range(self.N):
             #Black
-            if ((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
-                Algorithm.colorInput(i, 9, 0)
-            if ((self.sValue[int(i/col)][int(i%col)] <= 20) and (self.sValue[int(i/col)][int(i%col)] > 10) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
-                Algorithm.colorInput(i, 9, 0)
-            if ((self.sValue[int(i/col)][int(i%col)] <= 30) and (self.sValue[int(i/col)][int(i%col)] > 20) and (self.vValue[int(i/col)][int(i%col)] <= 40)):
+            if ((self.sValue[int(i/col)][int(i%col)] < 20) and (self.vValue[int(i/col)][int(i%col)] <= 20)):
                 Algorithm.colorInput(i, 9, 0)
 
             #Grey            
-            if ((self.sValue[int(i/col)][int(i%col)] <= 10) and (self.vValue[int(i/col)][int(i%col)] <= 70) and (self.vValue[int(i/col)][int(i%col)] > 30)):
+            if ((self.sValue[int(i/col)][int(i%col)] >= 0) and (self.sValue[int(i/col)][int(i%col)] < 4) and (self.vValue[int(i/col)][int(i%col)] > 20) and (self.vValue[int(i/col)][int(i%col)] <= 90)):
+                Algorithm.colorInput(i, 10, 0)
+            if ((self.sValue[int(i/col)][int(i%col)] >= 4) and (self.sValue[int(i/col)][int(i%col)] < 8) and (self.vValue[int(i/col)][int(i%col)] > 20) and (self.vValue[int(i/col)][int(i%col)] <= 70)):
+                Algorithm.colorInput(i, 10, 0)
+            if ((self.sValue[int(i/col)][int(i%col)] >= 8) and (self.sValue[int(i/col)][int(i%col)] < 12) and (self.vValue[int(i/col)][int(i%col)] > 20) and (self.vValue[int(i/col)][int(i%col)] <= 50)):
+                Algorithm.colorInput(i, 10, 0)
+            if ((self.sValue[int(i/col)][int(i%col)] >= 12) and (self.sValue[int(i/col)][int(i%col)] < 16) and (self.vValue[int(i/col)][int(i%col)] > 20) and (self.vValue[int(i/col)][int(i%col)] <= 30)):
                 Algorithm.colorInput(i, 10, 0)
 
             #White
-            if ((self.sValue[int(i/col)][int(i%col)] == 0) and (self.vValue[int(i/col)][int(i%col)] == 100)):
+            if ((self.sValue[int(i/col)][int(i%col)] >= 0) and (self.sValue[int(i/col)][int(i%col)] < 4) and (self.vValue[int(i/col)][int(i%col)] > 90) and (self.vValue[int(i/col)][int(i%col)] <= 100)):
                 Algorithm.colorInput(i, 11, 0)
 
             #나머지 색들은 s,v를 고려하지 않기 때문에 검흰회색보다 나중에 실행
@@ -355,18 +399,18 @@ class K_Means:
         self.greenImage[:,:,2] = 0
         self.redImage[:,:,1] = 0
         self.redImage[:,:,2] = 0
-        # hValueText = open("h.txt", 'w+')
-        # hToString = ''.join(str(self.hValue))
-        # hValueText.write(hToString)
-        # hValueText.close()
-        # sValueText = open("s.txt", 'w+')
-        # sToString = ''.join(str(self.sValue))
-        # sValueText.write(sToString)
-        # sValueText.close()
-        # vValueText = open("v.txt", 'w+')
-        # vToString = ''.join(str(self.vValue))
-        # vValueText.write(vToString)
-        # vValueText.close()
+        hValueText = open("h.txt", 'w+')
+        hToString = ''.join(str(self.hValue))
+        hValueText.write(hToString)
+        hValueText.close()
+        sValueText = open("s.txt", 'w+')
+        sToString = ''.join(str(self.sValue))
+        sValueText.write(sToString)
+        sValueText.close()
+        vValueText = open("v.txt", 'w+')
+        vToString = ''.join(str(self.vValue))
+        vValueText.write(vToString)
+        vValueText.close()
         blueValueText = open("blue.txt", 'w+')
         blueToString = ''.join(str(self.blueImage))
         blueValueText.write(blueToString)
@@ -379,19 +423,23 @@ class K_Means:
 
 
     def show(self):
-        # self.resultCluster = self.data.reshape((pix.shape))
-        # resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
-        # hImage = Image.fromarray(self.hValue.astype(np.uint8))
-        # sImage = Image.fromarray(self.sValue.astype(np.uint8))
-        # vImage = Image.fromarray(self.vValue.astype(np.uint8))
-        # hsvImage = Image.fromarray((np.dstack((self.hValue,self.sValue,self.vValue)) * 255).astype(np.uint8))
-        # hsvImage.show()
-        # hImage.show()
-        # sImage.show()
-        # vImage.show()
         self.resultCluster = self.data.reshape((pix.shape))
         resultImage = Image.fromarray(self.resultCluster.astype(np.uint8))
         self.newData.show()
+
+
+    def excelTrans(self):
+        #들어가야 할 것
+        #rgb, hsv, 색상, 이미지 차지 비율, 대표색, 원본 이미지에 대한 ID
+        #엑셀 파일로 내보낼 때 한글 없이 숫자만
+        #같은 계열은 묶어서 과반수 넘는지 확인 해서 대표색 정하기
+        input_data = {
+            'rgb' : self.excRgb,
+            'hsv' : self.excHsv
+        }
+
+        input_data = pd.DataFrame(input_data)
+        input_data.to_excel(excel_writer='sample.xlsx')
         
         
 Algorithm = K_Means(k, data=twoDim_array, row=row, col=col)
@@ -404,3 +452,4 @@ Algorithm.bgrToHsv()
 Algorithm.colorFiguration()
 # Algorithm.valueToText()
 Algorithm.show()
+Algorithm.excelTrans()
