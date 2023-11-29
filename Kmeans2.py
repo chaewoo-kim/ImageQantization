@@ -452,13 +452,13 @@ class K_Means:
         excelData = pd.DataFrame(excelData)
         # excelData.to_excel(excel_writer='sample.xlsx')
 
-        # fileName = '2023_11_26.xlsx'
-        # if (not os.path.exists(fileName)):
-        #     with pd.ExcelWriter(fileName, mode='w', engine='openpyxl') as writer:
-        #         excelData.to_excel(writer, sheet_name=sheetName)
-        # else:
-        #     with pd.ExcelWriter(fileName, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
-        #         excelData.to_excel(writer, sheet_name=sheetName, startcol=0, startrow=writer.sheets[sheetName].max_row)
+        fileName = '2023_11_26.xlsx'
+        if (not os.path.exists(fileName)):
+            with pd.ExcelWriter(fileName, mode='w', engine='openpyxl') as writer:
+                excelData.to_excel(writer, sheet_name=sheetName)
+        else:
+            with pd.ExcelWriter(fileName, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
+                excelData.to_excel(writer, sheet_name=sheetName, startcol=0, startrow=writer.sheets[sheetName].max_row)
 
 
     def valueToText(self):

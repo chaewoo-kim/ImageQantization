@@ -6,7 +6,7 @@ import math
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 
-img = cv2.imread('yellowBanana.jpg') #배열로 이미지 불러오기
+img = cv2.imread('/Users/chaewookim/Desktop/ColorClassification/ColorDataSet/Red_1.jpg') #배열로 이미지 불러오기
 
 #cv2.kmeans는 (N,3)의 shape과 flaot32의 데이터 형식을 입력 조건으로 사용 
 #reshape(-1,3)은 2차원 배열로 바꾸되 3열로 바꾸고 행은 알아서 넣으라는 뜻
@@ -39,11 +39,11 @@ result = center[label.flatten()]
 print(center)
 
 #원본 사진과 동일한 shape으로 변환
-result = result.reshape((img.shape))
+convertedImage = result.reshape((img.shape))
 
-blueImage = result.copy()
-greenImage = result.copy()
-redImage = result.copy()
+blueImage = convertedImage.copy()
+greenImage = convertedImage.copy()
+redImage = convertedImage.copy()
 
 
 blueImage[:,:,1] = 0 # G 제거
@@ -55,7 +55,7 @@ redImage[:,:,1] = 0 # G 제거
 
 
 height, width, channel = result.shape
-bgr = result.astype(float) / 255.0
+bgr = convertedImage.astype(float) / 255.0
 
 b, g, r = cv2.split(bgr)
 
@@ -67,36 +67,36 @@ v = np.max(bgr, axis=2)
 for i in range(height):
     for j in range(width):
         if v[i][j] == 0:
-            print("v : ", v[i][j])
+            # print("v : ", v[i][j])
             h[i][j] = 0
-            print("h : ", h[i][j])
+            # print("h : ", h[i][j])
             s[i][j] = 0
-            print("s : ", s[i][j])
-            print(i*width + j, "번째 -> b : ", b[i][j], " g : ", g[i][j], " r : ", r[i][j])
-            print(i*width + j, "번째 -> h : ", h[i][j], " s : ", s[i][j], " v : ", v[i][j])
+            # print("s : ", s[i][j])
+            # print(i*width + j, "번째 -> b : ", b[i][j], " g : ", g[i][j], " r : ", r[i][j])
+            # print(i*width + j, "번째 -> h : ", h[i][j], " s : ", s[i][j], " v : ", v[i][j])
         else:
             min_rgb = min(bgr[i][j])
-            print("min_rgb : ", min_rgb)
+            # print("min_rgb : ", min_rgb)
 
             s[i][j] = 1 - (min_rgb / v[i][j])
-            print("s : ", s[i][j])
+            # print("s : ", s[i][j])
 
             if v[i][j] == r[i][j]:
                 h[i][j] = 60 * (g[i][j] - b[i][j]) / (v[i][j] - min_rgb)
-                print("h : ", h[i][j])
+                # print("h : ", h[i][j])
             elif v[i][j] == g[i][j]:
                 h[i][j] = 120 + (60 * (b[i][j] - r[i][j])) / (v[i][j] - min_rgb)
-                print("h : ", h[i][j])
+                # print("h : ", h[i][j])
             elif v[i][j] == b[i][j]:
                 h[i][j] = 240 + (60 * (r[i][j] - g[i][j])) / (v[i][j] - min_rgb)
-                print("h : ", h[i][j])
+                # print("h : ", h[i][j])
             if h[i][j] < 0:
                 h[i][j] += 360
-                print("h : ", h[i][j])
+                # print("h : ", h[i][j])
                 h[i][j] /= 360
-                print("h : ", h[i][j])
-            print(i*width + j, "번째 -> b : ", b[i][j], " g : ", g[i][j], " r : ", r[i][j])
-            print(i*width + j, "번째 -> h : ", h[i][j], " s : ", s[i][j], " v : ", v[i][j])
+                # print("h : ", h[i][j])
+            # print(i*width + j, "번째 -> b : ", b[i][j], " g : ", g[i][j], " r : ", r[i][j])
+            # print(i*width + j, "번째 -> h : ", h[i][j], " s : ", s[i][j], " v : ", v[i][j])
 
 
             
@@ -133,11 +133,11 @@ d.close()
 
 cv2.imshow('original', result)
 cv2.waitKey()
-cv2.imshow('hsv', hsv_img)
-cv2.waitKey()
-cv2.imshow('h', h)
-cv2.waitKey()
-cv2.imshow('s', s)
-cv2.waitKey()
-cv2.imshow('v', v)
-cv2.waitKey()
+# cv2.imshow('hsv', hsv_img)
+# cv2.waitKey()
+# cv2.imshow('h', h)
+# cv2.waitKey()
+# cv2.imshow('s', s)
+# cv2.waitKey()
+# cv2.imshow('v', v)
+# cv2.waitKey()
