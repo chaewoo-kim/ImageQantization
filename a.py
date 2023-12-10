@@ -1,4 +1,3 @@
-a = [1,2,3]
-b = [1,2,3]
-if (a != b):
-    print("NOT SAME")
+a = 4
+b = [0 for _ in range(a)]
+print(b)

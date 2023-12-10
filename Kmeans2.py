@@ -1,3 +1,9 @@
+#최종 수정일 : 2023.12.10
+#수정 : 엑셀에 저장하기 위해 중심점의 index를 불러올 때 불러오지 못하는 오류 발생
+#      중심점의 index를 따로 저장하는 배열 생성
+#오류 : RGB 값을 기준으로 클러스터링하던 것을 거리를 기준으로 바꾸었더니 이미지를 구성하는 색이 아닌 여러 픽셀의 평균 색으로 이미지 전체가 분할되는 오류 발생
+#      RGB 값을 기준으로 돌리니 해결
+
 from PIL import Image
 import pandas as pd
 import numpy as np
@@ -12,7 +18,7 @@ np.set_printoptions(threshold=sys.maxsize)
 #해당 이미지를 배열로 변환
 img = Image.open("/Users/chaewookim/Desktop/ColorClassification/ColorDataSet/Red_1.jpg")
 pix = np.array(img)
-k=7
+k=4
 imageId = 'Red_1'
 sheetName = 'Red Image'
 
@@ -34,6 +40,8 @@ class K_Means:
         self.data = data
         self.N = len(data) #데이터의 길이, 즉 데이터의 개수
         self.standard = [0 for _ in range(self.k)] #중심점의 값 저장
+        self.standardIndex = [0 for _ in range(self.k)] #중심점의 좌표 저장
+        print(self.standardIndex)
         self.distanceList = [0 for _ in range(self.k)] #데이터들의 각 중심점으로부터의 거리를 저장하는 리스트
         self.Cluster = [0 for _ in range(self.N)] #각 데이터들이 속해있는 군집의 중심점 값을 저장하는 리스트
         self.resultCluster = np.array([0 for _ in range(self.N)]) #색상 양자화를 진행 후 화면 출력에 사용할 배열
@@ -113,12 +121,15 @@ class K_Means:
         self.refColorCom = [0 for _ in range(len(self.colorCount))]
 
 
+        print("col : ", col)
+        print("row : ", row)
         #랜덤으로 초기 중심점 k개 설정
         tmp = random.sample(range(0,col*row),self.k)
         for i in range(self.k):
             self.standard[i] = self.data[tmp[i]]
-        #0번째부터 시작하기 위해 row, col 모두 1씩 감소
-
+            self.standardIndex[i] = tmp[i]
+            # print(i,"번째 중심점 좌표 : [", self.standardIndex[i]/col, ", ", self.standardIndex[i]%col, "]")
+        
 
     #클러스터링 하는 함수
     def clustering(self,clusteringCount): 
@@ -128,8 +139,25 @@ class K_Means:
             for i in range(self.N):
                 for j in range(self.k):
                     self.distanceList[j] = (self.data[i][0]-self.standard[j][0])**2 + (self.data[i][1]-self.standard[j][1])**2 + (self.data[i][2]-self.standard[j][2])**2
+                    # self.distanceList[j] = (int(self.standardIndex[j])/col-i/col)**2 + (int(self.standardIndex[j])%col-i%col)**2
                 self.Cluster[i] = self.distanceList.index(min(self.distanceList))
-            #중심점 재설정
+
+            #2. 중심점의 좌표 값 재설정
+            for i in range(self.k):
+                rowSum = 0.0
+                colSum = 0.0
+                rowCount = 0
+                colCount = 0
+                for j in range(self.N):
+                    if (self.Cluster[j] == i):
+                        rowSum = rowSum + j/col
+                        colSum = colSum + j%col
+                        rowCount = rowCount + 1
+                        colCount = colCount + 1
+                self.standardIndex[i] = int(rowSum/rowCount*col) + int(colSum/colCount)
+                self.standard[i] = self.data[self.standardIndex[i]]
+
+            #중심점의 값 재설정
             #1. 군집의 모든 BGR 값의 평균으로 중심점 설정
             for i in range(self.k):
                 rCount, gCount, bCount = 1, 1, 1
@@ -153,6 +181,7 @@ class K_Means:
                 if (self.Cluster[i] == j):
                     self.data[i] = self.standard[j]
                     self.eachCount[j] = self.eachCount[j]+1
+        # print("양자화 후 중심점 값 : ", self.standard)
 
 
     def bgrToHsv(self):
@@ -408,6 +437,7 @@ class K_Means:
 
 
     def excelChanged(self):
+        print("excelChange에서 줌심점 : ",self.standard)
         #RGB, HSV, 대분류 색상, 소분류 색상, 픽셀 개수, 이미지 차지 비율, k 값, 아이디, 총 픽셀 개수
         for i in range(self.k):
             #RGB, HSV 및 이미지 아이디
