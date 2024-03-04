@@ -1,8 +1,10 @@
-#최종 수정일 : 2023.12.10
-#수정 : 엑셀에 저장하기 위해 중심점의 index를 불러올 때 불러오지 못하는 오류 발생
-#      중심점의 index를 따로 저장하는 배열 생성
-#오류 : RGB 값을 기준으로 클러스터링하던 것을 거리를 기준으로 바꾸었더니 이미지를 구성하는 색이 아닌 여러 픽셀의 평균 색으로 이미지 전체가 분할되는 오류 발생
-#      RGB 값을 기준으로 돌리니 해결
+#최종 수정일 : 2024.02.09
+#수정 : imageCrawler.py 파일에 크롬 드라이버를 이용한 이미지 크롤러 구현
+#오류 : 1. Alpha 값이 있는 경우 배열로 변환하는 과정에서 열의 개수가 3개가 아닌 4개가 되는 오류
+#      2. 이미지의 구성이 row, col, rgb가 아닌 row, col만 존재하는 경우에 발생하는 오류
+#해결 : 1, 2의 경우 모두 일단 try except문을 사용해 예외처리해 넘기는 방식으로 해결
+#      1은 Alpha를 없앤 배열을 만드는 방식을 알아내야 함
+#      2는 아직 어떤 상황인지 이해가 부족. 기본적으로 floor이 존재해 rgb로 구성된다고 알고 있는데 구글링해 보아도 이러한 경우는 아직 찾지 못 함. 
 
 from PIL import Image
 import pandas as pd
@@ -12,21 +14,40 @@ import sys
 import math
 import openpyxl
 import os
-np.set_printoptions(threshold=sys.maxsize)
+import csv
 
 
-#해당 이미지를 배열로 변환
-img = Image.open("/Users/chaewookim/Desktop/ColorClassification/ColorDataSet/Red_1.jpg")
-pix = np.array(img)
+np.set_printoptions(threshold=np.inf, linewidth=np.inf)
+
+# 색상 변경 시 바꿀 부분
+imgAmount = 100 # 이미지 개수
+imgEnd = 0
+imgArr = ["" for _ in range(imgAmount)]
+imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs/"
+imgColor = "LightGreen"
+imgObject = " Car"
+imgSlash = "/"
+imgJpg = ".jpg"
+fileName = '2024_02_09.xlsx' # 저장에 사용할 엑셀 파일 이름
 k=4
-imageId = 'Red_1'
-sheetName = 'Red Image'
 
-#3차원 배열 pix를 2차원 배열로 변환 뒤 floor 열 삭제
-row,col,floor = pix.shape
-twoDim_array = np.column_stack(((np.repeat(np.arange(row), col)), pix.reshape(row*col, -1)))
-twoDim_array = np.delete(twoDim_array, 0, axis=1)
+correctCount = 0 # 이미지 중 imgColor와 finalColor가 같은 이미지의 개수
+colorAccuracy = 0 # 모든 이미지에 대한 정확도
 
+searchKey = imgColor + imgObject # 검색어
+
+# 파일에서 여러 이미지를 가져오기 때문에 더 이상 사용하지 않음
+# 해당 이미지를 배열로 변환
+# img = Image.open("/Users/gimchaeu/Desktop/ColorClassification/red/1.jpg")
+# pix = np.array(img)
+# k=7
+# imageId = 'White_5'
+# sheetName = 'White Image'
+
+# #3차원 배열 pix를 2차원 배열로 변환 뒤 floor 열 삭제
+# row,col,floor = pix.shape
+# twoDim_array = np.column_stack(((np.repeat(np.arange(row), col)), pix.reshape(row*col, -1)))
+# twoDim_array = np.delete(twoDim_array, 0, axis=1)
 
 class K_Means:
     #k와 학습시킬 data 받아오기
@@ -146,15 +167,15 @@ class K_Means:
             for i in range(self.k):
                 rowSum = 0.0
                 colSum = 0.0
-                rowCount = 0
-                colCount = 0
+                rowCount = 1 #일단 1로 하고 나중에 수정할 것
+                colCount = 1 #일단 1로 하고 나중에 수정할 것
                 for j in range(self.N):
                     if (self.Cluster[j] == i):
                         rowSum = rowSum + j/col
                         colSum = colSum + j%col
                         rowCount = rowCount + 1
                         colCount = colCount + 1
-                self.standardIndex[i] = int(rowSum/rowCount*col) + int(colSum/colCount)
+                self.standardIndex[i] = int(rowSum/rowCount*col) + int(colSum/colCount) #0으로 나눠지는 오류 발생. rowCount, colCount를 1로 하면 될듯?
                 self.standard[i] = self.data[self.standardIndex[i]]
 
             #중심점의 값 재설정
@@ -176,6 +197,7 @@ class K_Means:
     def quantization(self):
         #색상 양자화
         #데이터의 값을 가장 가까운 중심점의 값으로 변경
+        print("standard: ",self.standard)
         for i in range(self.N):
             for j in range(self.k):
                 if (self.Cluster[i] == j):
@@ -436,6 +458,92 @@ class K_Means:
         return Algorithm.colorLargeClassify(index)
 
 
+    def colorDet(self):
+        #con1: Pixel Ratio가 가장 높은 색상
+        #con2: Big Color 수가 많은 색상
+
+        #기준
+        #1. con1 && con2 -> 대표색 결정
+        #2. con2 우선
+        #3. con1일 때 -> Big Color이 판별될 것
+        #4. 그 중 Pixel Ratio가 가장 높은 Small Color를 이미지의 대표색으로 선정
+        #- 어디에도 걸리지 않는 경우 etc로 설정
+
+        #con1: self.pixNumEx에서 가장 높은 값을 갖는 인덱스 가져옴 -> self.largeColorEx로 색상 가져와 저장
+        #con2: Big Color의 개수 확인
+
+        highPixIndex = 0
+        highPixNum = 0
+
+        bigColorName = [0 for _ in range(self.k)]
+        bigColorNum = [0 for _ in range(self.k)]
+
+        isCon1 = False
+        isCon2 = False
+        con1Color = ""
+        con2Color = ""
+        finalColor = ""
+
+        #con1
+        for i in range(len(self.pixNumEx)):
+            if (self.pixNumEx[i] >= highPixNum):
+                highPixNum = self.pixNumEx[i]
+                highPixIndex = i
+                isCon1 = True
+                break
+        con1Color = self.largeColorEx[highPixIndex]
+        print("con1: ", isCon1, " / con1Color: ",con1Color)
+
+        #con2
+        index = 0
+        maxCount = 0
+        count = 0
+
+        for i in range(len(self.largeColorEx)):
+            if self.largeColorEx[i] in bigColorName:
+                bigColorNum[bigColorName.index(self.largeColorEx[i])] += 1
+            else:
+                bigColorName[i] = self.largeColorEx[i]
+                bigColorNum[bigColorName.index(self.largeColorEx[i])] += 1
+        
+        for i in range(len(bigColorNum)):
+            if (bigColorNum[i] > maxCount):
+                index = i
+                maxCount = bigColorNum[i]
+
+        for i in range(len(bigColorNum)):
+            if (maxCount == bigColorNum[i]):
+                count += 1
+
+        if (count >= 2):
+            isCon2 = False
+        else:
+            isCon2 = True
+
+        con2Color = self.largeColorEx[index]
+        print("con2: ", isCon2, " / con2Color : ",con2Color)
+
+        #con1 con2 비교
+        if (isCon1 and isCon2):
+            self.finalColor = con2Color
+        elif (isCon2):
+            self.finalColor = con2Color
+        elif (isCon1):
+            self.finalColor = self.smallColorEx[index]
+        else:
+            self.finalColor = "etc" #아무것도 해당되지 않음
+
+        # 정확도 산출
+        # count == imgAmount일 때 계산
+        global correctCount
+        global imgEnd
+        imgEnd = imgEnd + 1
+        if self.finalColor == imgColor:
+            correctCount = correctCount + 1
+
+        return self.finalColor
+
+
     def excelChanged(self):
         print("excelChange에서 줌심점 : ",self.standard)
         #RGB, HSV, 대분류 색상, 소분류 색상, 픽셀 개수, 이미지 차지 비율, k 값, 아이디, 총 픽셀 개수
@@ -477,12 +585,12 @@ class K_Means:
             'Pixel Count' : self.pixNumEx,
             'Sum of Every Pixel' : self.pixNumSum,
             'Pixel Ratio' : self.pixRatioEx,
-            'Most Color' : self.refColor
+            'Most Color' : self.refColor,
+            'Final Color' : self.colorDet()
         }
         excelData = pd.DataFrame(excelData)
         # excelData.to_excel(excel_writer='sample.xlsx')
 
-        fileName = '2023_11_26.xlsx'
         if (not os.path.exists(fileName)):
             with pd.ExcelWriter(fileName, mode='w', engine='openpyxl') as writer:
                 excelData.to_excel(writer, sheet_name=sheetName)
@@ -491,16 +599,21 @@ class K_Means:
                 excelData.to_excel(writer, sheet_name=sheetName, startcol=0, startrow=writer.sheets[sheetName].max_row)
 
 
+    def accuracy(self):
+        global colorAccuracy
+        colorAccuracy = (correctCount / imgEnd) * 100
+
+
     def valueToText(self):
-        self.greenImage = self.resultCluster.copy()
-        self.redImage = self.resultCluster.copy()
-        self.blueImage = self.resultCluster.copy()
-        self.blueImage[:,:,1] = 0
-        self.blueImage[:,:,0] = 0
-        self.greenImage[:,:,0] = 0
-        self.greenImage[:,:,2] = 0
-        self.redImage[:,:,1] = 0
-        self.redImage[:,:,2] = 0
+        # self.greenImage = self.resultCluster.copy()
+        # self.redImage = self.resultCluster.copy()
+        # self.blueImage = self.resultCluster.copy()
+        # self.blueImage[:,:,1] = 0
+        # self.blueImage[:,:,0] = 0
+        # self.greenImage[:,:,0] = 0
+        # self.greenImage[:,:,2] = 0
+        # self.redImage[:,:,1] = 0
+        # self.redImage[:,:,2] = 0
         # hValueText = open("h.txt", 'w+')
         # hToString = ''.join(str(self.hValue))
         # hValueText.write(hToString)
@@ -513,15 +626,18 @@ class K_Means:
         # vToString = ''.join(str(self.vValue))
         # vValueText.write(vToString)
         # vValueText.close()
-        blueValueText = open("blue.txt", 'w+')
-        blueToString = ''.join(str(self.blueImage))
-        blueValueText.write(blueToString)
-        greenValueText = open("green.txt", 'w+')
-        greenToString = ''.join(str(self.greenImage))
-        greenValueText.write(greenToString)
-        redValueText = open("red.txt", 'w+')
-        redToString = ''.join(str(self.redImage))
-        redValueText.write(redToString)    
+        # blueValueText = open("blue.txt", 'w+')
+        # blueToString = ''.join(str(self.blueImage))
+        # blueValueText.write(blueToString)
+        # greenValueText = open("green.txt", 'w+')
+        # greenToString = ''.join(str(self.greenImage))
+        # greenValueText.write(greenToString)
+        # redValueText = open("red.txt", 'w+')
+        # redToString = ''.join(str(self.redImage))
+        # redValueText.write(redToString)    
+        dataValueText = open("data.txt", 'w+')
+        dataToString = ''.join(str(self.data))
+        dataValueText.write(dataToString)
 
 
     def show(self):
@@ -536,13 +652,57 @@ class K_Means:
         # sImage.show()
         # vImage.show()
         resultImage.show()
-        
-        
-Algorithm = K_Means(k, data=twoDim_array, row=row, col=col)
-Algorithm.clustering(4)
-Algorithm.quantization()
-Algorithm.bgrToHsv()
-Algorithm.colorFiguration()
-Algorithm.excelChanged()
-# Algorithm.valueToText()
-Algorithm.show()
+
+
+for i in range(1, imgAmount+1):
+    imgNum = str(i)
+    print("현재 이미지 번호: ", imgNum, "번")
+
+    #해당 이미지를 배열로 변환
+    imgOrigin = imgAddress + imgColor + imgSlash + searchKey + imgNum + imgJpg
+    img = Image.open(imgOrigin)
+    pix = np.array(img)
+    imageId = imgColor + "_" + imgNum
+    sheetName = imgColor + " Image"
+
+    #3차원 배열 pix를 2차원 배열로 변환 뒤 floor 열 삭제
+    try:
+        row,col,floor = pix.shape
+        if floor == 4:
+            continue
+
+        twoDim_array = np.column_stack(((np.repeat(np.arange(row), col)), pix.reshape(row*col, -1)))
+        twoDim_array = np.delete(twoDim_array, 0, axis=1)
+    except:
+        continue
+
+    #알고리즘 실행
+    Algorithm = K_Means(k, data=twoDim_array, row=row, col=col)
+    Algorithm.clustering(5)
+    Algorithm.quantization()
+    Algorithm.bgrToHsv()
+    Algorithm.colorFiguration()
+    Algorithm.valueToText()
+    Algorithm.excelChanged()
+    # Algorithm.show()
+
+Algorithm.accuracy()
+
+excelData = {
+            'Image Id' : "x",
+            'Number of K' : "x",
+            'RGB' : "x",
+            'HSV' : "x",
+            'Big Color' : "x",
+            'Small Color' : "x",
+            'Pixel Count' : "x",
+            'Sum of Every Pixel' : "x",
+            'Pixel Ratio' : "x",
+            'Most Color' : "x",
+            'Final Color' : "x",
+            'Accuracy' : colorAccuracy
+        }
+
+print("이미지 총 개수: ", imgEnd)
+print("정확한 이미지 개수: ", correctCount)
+print(colorAccuracy)
