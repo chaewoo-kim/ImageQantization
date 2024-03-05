@@ -1,3 +1,6 @@
+#최종 수정일 : 2024.03.05
+#수정 : jpg에서 png로 다운받는 형식 변경
+
 #구글을 이용한 이미지 크롤러
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -9,14 +12,15 @@ import time
 import urllib.request
 
 # 색상 변경 시 바꿀 부분
-imgAmount = 120 # 이미지 개수
-imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs/"
-imgColor = "Grey"
+imgAmount = 50 # 이미지 개수
+imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_2/"
+imgColor = "Black"
 imgObject = " Car"
+imgType = " png"
 imgSlash = "/"
-imgJpg = ".jpg"
+imgPng = ".png"
 
-searchKey = imgColor + imgObject # 검색어
+searchKey = imgColor + imgObject + imgType# 검색어
 
 driver = webdriver.Chrome()
 driver.get("https://www.google.co.kr/imghp?hl=ko&tab=wi&authuser=0&ogbl")
@@ -63,7 +67,7 @@ for image in images:
         ]
 
         urllib.request.install_opener(opener)
-        urllib.request.urlretrieve(imgUrl, f'./imgs/{imgColor}/{searchKey}{str(count)}.jpg')
+        urllib.request.urlretrieve(imgUrl, f'./imgs_2/{imgColor}/{searchKey}{str(count)}.png')
         count = count + 1
     except Exception as e:
         print('e : ', e)
