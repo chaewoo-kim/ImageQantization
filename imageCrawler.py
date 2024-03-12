@@ -12,8 +12,8 @@ import time
 import urllib.request
 
 # 색상 변경 시 바꿀 부분
-imgAmount = 50 # 이미지 개수
-imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_2/"
+imgAmount = 200 # 이미지 개수
+imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_3/"
 imgColor = "Black"
 imgObject = " Car"
 imgType = " png"
@@ -67,7 +67,7 @@ for image in images:
         ]
 
         urllib.request.install_opener(opener)
-        urllib.request.urlretrieve(imgUrl, f'./imgs_2/{imgColor}/{searchKey}{str(count)}.png')
+        urllib.request.urlretrieve(imgUrl, f'./imgs_3/{imgColor}/{searchKey}{str(count)}.png')
         count = count + 1
     except Exception as e:
         print('e : ', e)

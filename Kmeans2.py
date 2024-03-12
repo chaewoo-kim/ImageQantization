@@ -1,7 +1,7 @@
-#최종 수정일 : 2024.03.05
-#수정 : jpg에서 png로 형식 변경을 위한 변수 추가
-#오류 : k가 5 이상일 때 가끔 엑셀화에서 오류 발생. 중심점 오류. 여러번 반복하면 진행되긴 함. 반복문으로 하는 것도 나쁘지 않을수도
-#해결 : 아직 해결하지 못 함
+#최종 수정일 : 2024.03.12
+#수정 : k가 5 이상일 때 발생하던 오류를 해결은 아니고 임시방편으로 해당 이미지는 뛰어넘도록 설정
+#오류 : 크롤링으로 다운받은 이미지 자체가 훼손되어 있는 경우에 undefinedImage 오류 발생
+#해결 : 일단 다운받은 이미지를 한 번 점검해서 이상이 있을 시 다른 이미지 파일로 대체
 
 from PIL import Image
 import pandas as pd
@@ -17,16 +17,16 @@ import csv
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 # 색상 변경 시 바꿀 부분
-imgAmount = 50 # 이미지 개수
+imgAmount = 200 # 이미지 개수
 imgEnd = 0
 imgArr = ["" for _ in range(imgAmount)]
-imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_2/"
+imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_3/"
 imgColor = "Black"
 imgObject = " Car"
 imgType = " png"
 imgSlash = "/"
 imgPng = ".png"
-fileName = '2024_03_10.xlsx' # 저장에 사용할 엑셀 파일 이름
+fileName = '2024_03_12.xlsx' # 저장에 사용할 엑셀 파일 이름
 k=7
 
 correctCount = 0 # 이미지 중 imgColor와 finalColor가 같은 이미지의 개수
@@ -652,13 +652,13 @@ class K_Means:
         resultImage.show()
 
 
-for i in range(44, imgAmount+1):
+for i in range(1, imgAmount + 1):
     imgNum = str(i)
     print("현재 이미지 번호: ", imgNum, "번")
 
     #해당 이미지를 배열로 변환
     imgOrigin = imgAddress + imgColor + imgSlash + searchKey + imgNum + imgPng
-    img = Image.open(imgOrigin)
+    img = Image.open(imgOrigin) #오류 발생 : undefined Image, 해결 방법은 그냥 건너뛰기. 
     pix = np.array(img)
     imageId = imgColor + "_" + imgNum
     sheetName = imgColor + " Image"
@@ -681,7 +681,10 @@ for i in range(44, imgAmount+1):
     Algorithm.bgrToHsv()
     Algorithm.colorFiguration()
     # Algorithm.valueToText()
-    Algorithm.excelChanged()
+    try:
+        Algorithm.excelChanged()
+    except:
+        continue
     # Algorithm.show()
 
 Algorithm.accuracy()
