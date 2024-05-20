@@ -1,10 +1,7 @@
-#최종 수정일 : 2024.02.09
-#수정 : imageCrawler.py 파일에 크롬 드라이버를 이용한 이미지 크롤러 구현
-#오류 : 1. Alpha 값이 있는 경우 배열로 변환하는 과정에서 열의 개수가 3개가 아닌 4개가 되는 오류
-#      2. 이미지의 구성이 row, col, rgb가 아닌 row, col만 존재하는 경우에 발생하는 오류
-#해결 : 1, 2의 경우 모두 일단 try except문을 사용해 예외처리해 넘기는 방식으로 해결
-#      1은 Alpha를 없앤 배열을 만드는 방식을 알아내야 함
-#      2는 아직 어떤 상황인지 이해가 부족. 기본적으로 floor이 존재해 rgb로 구성된다고 알고 있는데 구글링해 보아도 이러한 경우는 아직 찾지 못 함. 
+#최종 수정일 : 2024.03.12
+#수정 : k가 5 이상일 때 발생하던 오류를 해결은 아니고 임시방편으로 해당 이미지는 뛰어넘도록 설정
+#오류 : 크롤링으로 다운받은 이미지 자체가 훼손되어 있는 경우에 undefinedImage 오류 발생
+#해결 : 일단 다운받은 이미지를 한 번 점검해서 이상이 있을 시 다른 이미지 파일로 대체
 
 from PIL import Image
 import pandas as pd
@@ -20,21 +17,22 @@ import csv
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 # 색상 변경 시 바꿀 부분
-imgAmount = 100 # 이미지 개수
+imgAmount = 200 # 이미지 개수
 imgEnd = 0
 imgArr = ["" for _ in range(imgAmount)]
-imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs/"
-imgColor = "LightGreen"
+imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_3/"
+imgColor = "Black"
 imgObject = " Car"
+imgType = " png"
 imgSlash = "/"
-imgJpg = ".jpg"
-fileName = '2024_02_09.xlsx' # 저장에 사용할 엑셀 파일 이름
-k=4
+imgPng = ".png"
+fileName = '2024_03_12.xlsx' # 저장에 사용할 엑셀 파일 이름
+k=7
 
 correctCount = 0 # 이미지 중 imgColor와 finalColor가 같은 이미지의 개수
 colorAccuracy = 0 # 모든 이미지에 대한 정확도
 
-searchKey = imgColor + imgObject # 검색어
+searchKey = imgColor + imgObject + imgType # 검색어
 
 # 파일에서 여러 이미지를 가져오기 때문에 더 이상 사용하지 않음
 # 해당 이미지를 배열로 변환
@@ -604,7 +602,7 @@ class K_Means:
         colorAccuracy = (correctCount / imgEnd) * 100
 
 
-    def valueToText(self):
+    # def valueToText(self):
         # self.greenImage = self.resultCluster.copy()
         # self.redImage = self.resultCluster.copy()
         # self.blueImage = self.resultCluster.copy()
@@ -635,9 +633,9 @@ class K_Means:
         # redValueText = open("red.txt", 'w+')
         # redToString = ''.join(str(self.redImage))
         # redValueText.write(redToString)    
-        dataValueText = open("data.txt", 'w+')
-        dataToString = ''.join(str(self.data))
-        dataValueText.write(dataToString)
+        # dataValueText = open("data.txt", 'w+')
+        # dataToString = ''.join(str(self.data))
+        # dataValueText.write(dataToString)
 
 
     def show(self):
@@ -654,13 +652,13 @@ class K_Means:
         resultImage.show()
 
 
-for i in range(1, imgAmount+1):
+for i in range(1, imgAmount + 1):
     imgNum = str(i)
     print("현재 이미지 번호: ", imgNum, "번")
 
     #해당 이미지를 배열로 변환
-    imgOrigin = imgAddress + imgColor + imgSlash + searchKey + imgNum + imgJpg
-    img = Image.open(imgOrigin)
+    imgOrigin = imgAddress + imgColor + imgSlash + searchKey + imgNum + imgPng
+    img = Image.open(imgOrigin) #오류 발생 : undefined Image, 해결 방법은 그냥 건너뛰기. 
     pix = np.array(img)
     imageId = imgColor + "_" + imgNum
     sheetName = imgColor + " Image"
@@ -682,8 +680,11 @@ for i in range(1, imgAmount+1):
     Algorithm.quantization()
     Algorithm.bgrToHsv()
     Algorithm.colorFiguration()
-    Algorithm.valueToText()
-    Algorithm.excelChanged()
+    # Algorithm.valueToText()
+    try:
+        Algorithm.excelChanged()
+    except:
+        continue
     # Algorithm.show()
 
 Algorithm.accuracy()
