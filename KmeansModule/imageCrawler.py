@@ -12,10 +12,10 @@ import time
 import urllib.request
 
 # 색상 변경 시 바꿀 부분
-imgAmount = 90 # 이미지 개수
+imgAmount = 50 # 이미지 개수
 imgAddress = "/Users/gimchaeu/Desktop/알약 과제/imgs_3/"
-imgColor = "Grey"
-imgObject = " Car"
+imgColor = "Blue"
+imgObject = " Pill"
 imgType = " png"
 imgSlash = "/"
 imgPng = ".png"
@@ -42,7 +42,7 @@ while True:
     if new_height == last_height:
         try:
             driver.find_element(By.CSS_SELECTOR, ".mye4qd").click()
-        except:
+        except Exception as e:
             break
     last_height = new_height
 
@@ -67,7 +67,7 @@ for image in images:
         ]
 
         urllib.request.install_opener(opener)
-        urllib.request.urlretrieve(imgUrl, f'./imgs_3/{imgColor}/{searchKey}{str(count)}.png')
+        urllib.request.urlretrieve(imgUrl, f'../pill_images/{imgColor}/{searchKey}{str(count)}.png')
         count = count + 1
     except Exception as e:
         print('e : ', e)
